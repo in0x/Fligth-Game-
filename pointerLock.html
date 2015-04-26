@@ -3,148 +3,119 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <script type="text/javascript" src="js/three.min.js"></script>
-    <script type="text/javascript" src="js/PointerLockControls.js"></script>
+     <script type="text/javascript" src="js/PointerLockControls.js"></script> 
     <script type="text/javascript" src="THREEx.fullscreen.js"></script>
 </head>
 <body>
 <script type="text/javascript">
 
     window.onload = function() {
+      
       var RENDER_WIDTH = window.innerWidth, RENDER_HEIGHT = window.innerHeight;
       var clock = new THREE.Clock();
    
+     ///pointer locking////
+     var iHazPointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
 
-   ///pointer locking////
-   var iHazPointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
-
-   var element = document.body;
+     var element = document.body;
 
       if (iHazPointerLock) {  
         element.requestPointerLock = element.requestPointerLock || element.mozRequestPointerLock || element.webkitRequestPointerLock;
         var pointerlockchange = function ( event ) {
           if ( document.pointerLockElement === element || document.mozPointerLockElement === element || document.webkitPointerLockElement === element ) {
-            //controlsEnabled = true;
             controls.enabled = true;
           } 
         } 
-      document.addEventListener('keypress', function(e) {
+        document.addEventListener('keypress', function(e) {
         if (e.keyCode == 13) {
           element.requestPointerLock();
         }
-        document.addEventListener( 'pointerlockchange', pointerlockchange, false );
-        document.addEventListener( 'mozpointerlockchange', pointerlockchange, false );
-        document.addEventListener( 'webkitpointerlockchange', pointerlockchange, false );
-      })
+          document.addEventListener( 'pointerlockchange', pointerlockchange, false );
+          document.addEventListener( 'mozpointerlockchange', pointerlockchange, false );
+          document.addEventListener( 'webkitpointerlockchange', pointerlockchange, false );
+        })
+      } 
+    ///pointer locking end////
 
-    } 
-  ///pointer locking////
-
-      // Creating scene
-      var scene = new THREE.Scene();
-    
-      // Camera
-      var camera = new THREE.PerspectiveCamera(45, RENDER_WIDTH / RENDER_HEIGHT, 0.1, 10000);
-      camera.position.set(200, 0, 0);
-      scene.add(camera);
-     
-      var controls = new THREE.PointerLockControls(camera);
-      scene.add( controls.getObject() );
-
-
-      var cube = new THREE.Mesh(new THREE.BoxGeometry(200, 200, 1000), new THREE.MeshLambertMaterial({
-        color: 'blue' 
-      }));
-      cube.side = THREE.DoubleSide;
-      cube.overdraw = true;
-      cube.rotation.x = Math.PI * 0.1;
-      //cube.rotation.y = 90 * Math.PI / 180;
-      //camera.lookAt(cube);
-
-      var cube1front = new THREE.Mesh(new THREE.BoxGeometry(200, 200, 1000), new THREE.MeshLambertMaterial({
-        color: 'green' 
-      }));
-      cube1front.overdraw = true;
-      cube1front.rotation.x = Math.PI * 0.1;
-      cube1front.translateZ(-1000);
-   
-      var cube2 = cube.clone();
-      cube2.translateX(600);
-     
-      var cube2left = cube1front.clone();
-      cube2left.translateX(600);
+    // Creating scene
+    var scene = new THREE.Scene();
   
-      // Light
-      scene.add(new THREE.AmbientLight(0x333333));
-      // directional lighting
-      var directionalLight = new THREE.DirectionalLight(0xffffff);
-      directionalLight.position.set(1, 1, 1).normalize();
-      scene.add(directionalLight);
+    // Camera
+    var camera = new THREE.PerspectiveCamera(45, RENDER_WIDTH / RENDER_HEIGHT, 0.1, 10000);
+    scene.add(camera);
+   
+    var controls = new THREE.PointerLockControls(camera);
+    scene.add( controls.getObject() );
 
-      var detectionBody = new THREE.Mesh(new THREE.BoxGeometry(50, 50, 50), new THREE.MeshLambertMaterial({color: 'blue'}));
-      detectionBody.translateZ(-300);
-      //detectionBody.rotation.y +=  45 * 180 / Math.PI;
-      scene.add(detectionBody);
-      camera.add(detectionBody);
 
-      //These are the objects to check raycasting intersection with
-      var obj_group = new THREE.Group();
-      obj_group.add(cube);
-      obj_group.add(cube2);
-      obj_group.add(cube1front);
-      obj_group.add(cube2left); 
-      scene.add(obj_group);
+    var cube = new THREE.Mesh(new THREE.BoxGeometry(200, 200, 1000), new THREE.MeshLambertMaterial({
+      color: 'blue' 
+    }));
+    cube.side = THREE.DoubleSide;
+    cube.overdraw = true;
+    cube.rotation.x = Math.PI * 0.1;
+  
+    var cube1front = new THREE.Mesh(new THREE.BoxGeometry(200, 200, 1000), new THREE.MeshLambertMaterial({
+      color: 'green' 
+    }));
+    cube1front.overdraw = true;
+    cube1front.rotation.x = Math.PI * 0.1;
+    cube1front.translateZ(-1000);
+ 
+    var cube2 = cube.clone();
+    cube2.translateX(600);
+   
+    var cube2left = cube1front.clone();
+    cube2left.translateX(600);
 
-      var mesh_list = [];
-      mesh_list.push(cube);
-      mesh_list.push(cube2);
-      mesh_list.push(cube1front);
-      mesh_list.push(cube2left);
-     
-      // Render
-      var renderer = new THREE.WebGLRenderer({antialias: true});
-      renderer.setSize(RENDER_WIDTH, RENDER_HEIGHT);
-      renderer.setClearColor( 0x96e0e7, 1 );
-      document.body.appendChild(renderer.domElement);
+    // Light
+    scene.add(new THREE.AmbientLight(0x333333));
+    // directional lighting
+    var directionalLight = new THREE.DirectionalLight(0xffffff);
+    directionalLight.position.set(1, 1, 1).normalize();
+    scene.add(directionalLight);
+
+    // My cube for detecting collisions with
+    var detectionBody = new THREE.Mesh(new THREE.BoxGeometry(50, 50, 50), new THREE.MeshLambertMaterial({color: 'blue'}));
+    detectionBody.translateZ(-300);
+    //detectionBody.rotation.y +=  45 * 180 / Math.PI;
+    scene.add(detectionBody);
+    camera.add(detectionBody);
+
+    //These are the objects to check raycasting intersection with
+    var obj_group = new THREE.Group();
+    obj_group.add(cube);
+    obj_group.add(cube2);
+    obj_group.add(cube1front);
+    obj_group.add(cube2left); 
+    scene.add(obj_group);
+
+    var mesh_list = [];
+    mesh_list.push(cube);
+    mesh_list.push(cube2);
+    mesh_list.push(cube1front);
+    mesh_list.push(cube2left);
+   
+    // Render
+    var renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setSize(RENDER_WIDTH, RENDER_HEIGHT);
+    renderer.setClearColor( 0x96e0e7, 1 );
+    document.body.appendChild(renderer.domElement);
     
-      //depends on collisionBody being a plane
-    function betterCD() {
-      for (var vertices = 0; vertices < detectionBody.geometry.vertices.length; vertices++) {
-        var planeVectorX = detectionBody.geometry.vertices[1].clone().sub(detectionBody.geometry.vertices[0]);
-        var planeVectorY = detectionBody.geometry.vertices[1].clone().sub(detectionBody.geometry.vertices[3]);
-        var perpPlaneVector = planeVectorX.clone();
-        perpPlaneVector = perpPlaneVector.cross(planeVectorY).normalize();
-        var caster = new THREE.Raycaster(detectionBody.geometry.vertices[vertices], perpPlaneVector);
-        var intersects = caster.intersectObjects(mesh_list);
-
-        if (intersects.length > 0) 
-          intersects.forEach(function(intersect) {
-            if (intersect.distance < perpPlaneVector.length())
-              console.log('pew pew');
-          })
-      }
-    }
     //depends on collision body being a box
    
       function animate() {
-        //detectCollisions();
         //betterCD();
         requestAnimationFrame( animate );
         controls.update();
-        var currentPos = detectionBody.position.clone();
-        //console.log(detectionBody.position);
-        
-        for (var index = 0; index < detectionBody.geometry.vertices.length; index++) {
-          var localVec = detectionBody.geometry.vertices[index].clone();
-          var globalVec = localVec.applyMatrix4(detectionBody.matrix);
-          var directionVec = globalVec.sub(detectionBody.geometry.vertices[index].clone());
-
-          var rayCaster = new THREE.Raycaster(currentPos, directionVec.clone().normalize());
-          var intersect = rayCaster.intersectObjects(mesh_list);
-          if (intersect.length > 0 && intersect[0].distance < directionVec.length()) {
-            console.log('pew pew');
-          }
+        var cameraDirection = controls.getDirection(new THREE.Vector3(0, 0, 0)).clone();
+        var raycaster = new THREE.Raycaster( controls.getObject().position, cameraDirection, 0, 100);
+        var collisionResults = raycaster.intersectObjects(mesh_list, true);
+        if(collisionResults.length > 0)
+        {
+            console.log('pew pew pew');
         }
-     
+
         renderer.render(scene, camera);
 
       }

@@ -1,6 +1,7 @@
+//for purposes of keeping a clean version
+
 /**
  * @author mrdoob / http://mrdoob.com/
- * modified by in0x http://twitter.com/inoxstuff
  */
 
 THREE.PointerLockControls = function ( camera ) {
@@ -28,7 +29,6 @@ THREE.PointerLockControls = function ( camera ) {
 	var prevTime = performance.now();
 
 	var velocity = new THREE.Vector3();
-	this.velocity = velocity;
 
 	var PI_2 = Math.PI / 2;
 
@@ -138,7 +138,7 @@ THREE.PointerLockControls = function ( camera ) {
 
 		return function( v ) {
 
-			rotation.set( yawObject.rotation.x, yawObject.rotation.y, 0 );
+			rotation.set( pitchObject.rotation.x, yawObject.rotation.y, 0 );
 
 			v.copy( direction ).applyEuler( rotation );
 
