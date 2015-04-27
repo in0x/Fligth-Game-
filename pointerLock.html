@@ -47,24 +47,27 @@
     var controls = new THREE.PointerLockControls(camera);
     scene.add( controls.getObject() );
 
-
-    var cube = new THREE.Mesh(new THREE.BoxGeometry(200, 200, 1000), new THREE.MeshLambertMaterial({
+    //First front left cube
+    var cube = new THREE.Mesh(new THREE.BoxGeometry(200, 200, 3000), new THREE.MeshLambertMaterial({
       color: 'blue' 
     }));
     cube.side = THREE.DoubleSide;
     cube.overdraw = true;
     cube.rotation.x = Math.PI * 0.1;
   
-    var cube1front = new THREE.Mesh(new THREE.BoxGeometry(200, 200, 1000), new THREE.MeshLambertMaterial({
+    //back lef cube
+    var cube1front = new THREE.Mesh(new THREE.BoxGeometry(200, 200, 3000), new THREE.MeshLambertMaterial({
       color: 'green' 
     }));
     cube1front.overdraw = true;
     cube1front.rotation.x = Math.PI * 0.1;
-    cube1front.translateZ(-1000);
+    cube1front.translateZ(-3000);
  
+    // front right cube
     var cube2 = cube.clone();
     cube2.translateX(600);
    
+    // back right cube
     var cube2left = cube1front.clone();
     cube2left.translateX(600);
 
@@ -74,6 +77,11 @@
     var directionalLight = new THREE.DirectionalLight(0xffffff);
     directionalLight.position.set(1, 1, 1).normalize();
     scene.add(directionalLight);
+
+    //fog to mask reloading
+    //scene.fog = new THREE.Fog('#0xeeeeee', 3000, 4000);
+    scene.fog = new THREE.FogExp2( 0x96e0e7, 0.0005 );
+
 
     // My cube for detecting collisions with
     var detectionBody = new THREE.Mesh(new THREE.BoxGeometry(50, 50, 50), new THREE.MeshLambertMaterial({color: 'blue'}));
@@ -101,21 +109,35 @@
     renderer.setSize(RENDER_WIDTH, RENDER_HEIGHT);
     renderer.setClearColor( 0x96e0e7, 1 );
     document.body.appendChild(renderer.domElement);
+
+
+    var lastCheckPosition = -1000;
+    function reloadWorld() {
+      var currentViewingPosition = controls.getObject().position.z;
+      if (currentViewingPosition + (lastCheckPosition * - 1) < -1000) {
+        mesh_list.forEach(function(mesh) {
+          mesh.translateZ(-2000);
+        });
+        lastCheckPosition = currentViewingPosition;
+      }
+    }
     
-    //depends on collision body being a box
-   
+
+    //Actually no dependencies anymore, collision body is the Object3D of the camera
+    //Raycaster uses intersectObjects method of objects, these only return a result if the distance between
+    //intersection and origin indicates a collision (< 0)
       function animate() {
-        //betterCD();
         requestAnimationFrame( animate );
         controls.update();
         var cameraDirection = controls.getDirection(new THREE.Vector3(0, 0, 0)).clone();
-        var raycaster = new THREE.Raycaster( controls.getObject().position, cameraDirection, 0, 100);
+        //THREE.Raycaster( origin, direction, near, far)
+        var raycaster = new THREE.Raycaster( controls.getObject().position, cameraDirection.clone().normalize(), 0, 100);
         var collisionResults = raycaster.intersectObjects(mesh_list, true);
         if(collisionResults.length > 0)
         {
             console.log('pew pew pew');
         }
-
+        reloadWorld();
         renderer.render(scene, camera);
 
       }

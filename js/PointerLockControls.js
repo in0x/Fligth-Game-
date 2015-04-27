@@ -1,6 +1,6 @@
 /**
  * @author mrdoob / http://mrdoob.com/
- * modified by in0x http://twitter.com/inoxstuff
+ * modified by philipp welsch 
  */
 
 THREE.PointerLockControls = function ( camera ) {
