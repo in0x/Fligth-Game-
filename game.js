@@ -44,7 +44,7 @@ window.onload = function() {
     cube.side = THREE.DoubleSide;
     cube.overdraw = true;
     cube.rotation.x = Math.PI * 0.1;
-    cube.translateX(-1200)
+    cube.translateX(-1500)
   
     //back lef cube
     var cube1front = new THREE.Mesh(new THREE.BoxGeometry(100, 1000, 3000), new THREE.MeshLambertMaterial({
@@ -52,16 +52,16 @@ window.onload = function() {
     }));
     cube1front.overdraw = true;
     cube1front.rotation.x = Math.PI * 0.1;
-    cube1front.translateX(-1200)
+    cube1front.translateX(-1500)
     cube1front.translateZ(-3000);
  
     // front right cube
     var cube2 = cube.clone();
-    cube2.translateX(2400);
+    cube2.translateX(3000);
    
     // back right cube
     var cube2left = cube1front.clone();
-    cube2left.translateX(2400);
+    cube2left.translateX(3000);
 
     // Light
     scene.add(new THREE.AmbientLight(0x333333));
@@ -81,9 +81,12 @@ window.onload = function() {
         zmesh.position.set(x, y, z);
         zmesh.scale.set(scale, scale, scale);
         mesh_list.push(zmesh);
+        zmesh.translateZ(-200);
+        zmesh.rotation.x += 18 * Math.PI / 180;
+        zmesh.rotation.y = (Math.random() * 10);
         scene.add(zmesh);
     }
-    var callback = function(geometry) {createScene(geometry, 0, 0, -80, 10 )};
+    var callback = function(geometry) {createScene(geometry, 0, 0, -80, 100 )};
     loader.load("tree.js", callback);
 
 
