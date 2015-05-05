@@ -160,11 +160,11 @@ THREE.PointerLockControls = function ( camera ) {
 		velocity.z -= velocity.z * 10.0 * delta;
 		velocity.y -= velocity.y * 10.0 * delta;
 
-		if ( moveForward ) velocity.z -= 4000.0 * delta;
-		if ( moveBackward ) velocity.z += 4000.0 * delta;
+		if ( moveForward ) velocity.z -= 7000.0 * delta;
+		if ( moveBackward ) velocity.z += 7000.0 * delta;
 
-		if ( moveLeft ) velocity.x -= 4000.0 * delta;
-		if ( moveRight ) velocity.x += 4000.0 * delta;
+		if ( moveLeft ) velocity.x -= 7000.0 * delta;
+		if ( moveRight ) velocity.x += 7000.0 * delta;
 
 		if ( isOnObject === true ) {
 
@@ -176,14 +176,7 @@ THREE.PointerLockControls = function ( camera ) {
 		yawObject.translateY( velocity.y * delta ); 
 		yawObject.translateZ( velocity.z * delta );
 
-		if ( yawObject.position.y < 10 ) {
-
-			velocity.y = 0;
-			yawObject.position.y = 10;
-
-			canJump = true;
-
-		}
+		
 
 		prevTime = time;
 
