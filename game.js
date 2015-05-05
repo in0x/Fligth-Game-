@@ -140,21 +140,27 @@ window.onload = function() {
       }
     }
     
+    //First x -1500, -500; z position, 1000
+    //Second x -500, 500
+    //Third x 500, 1500 
     function spawnObstacles(mesh, curViewPos) {
       for (var y = 0; y < 3; y++)
         for (var x = 0; x < 3; x++) {
-          var x_pos = -1500 + 1000 * x,
-              z_pos = curViewPos - 1000 * y
-          
+          // var x_pos = -1500 + 1000 * x,
+          //     z_pos = curViewPos - 1000 * y
+
+          var x_pos = getRandom(-1500 + 1000 * x, -1500 + 1000 * (x + 1)),
+              z_pos = getRandom(curViewPos, curViewPos - 1000 * y)
+
           var tempMesh = new THREE.Mesh(treeGeo, new THREE.MeshLambertMaterial( { color: 'hotpink' } ))
-          tempMesh.position.set(x_pos, 0, z_pos)
-          tempMesh.scale.set(10, 10, 10)
+          tempMesh.position.set(x_pos, -300, z_pos)
+          tempMesh.scale.set(40, 40, 40)
           scene.add(tempMesh)
         }
     } 
 
     function getRandom(min, max) {
-      return Math.floor((Math.random() * (max - min) + min) * 100)
+      return Math.floor((Math.random() * (max - min) + min))
     }
  
     //Actually no dependencies anymore, collision body is the Object3D of the camera
