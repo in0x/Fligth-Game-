@@ -61,16 +61,7 @@ window.onload = function() {
 
       scene.fog = new THREE.FogExp2( 0x96e0e7, 0.00025)
 
-      // var floor = new THREE.Mesh(new THREE.PlaneBufferGeometry( 1000, 1000, 1, 1), new THREE.MeshLambertMaterial({
-      //   color: 0xF0E98B}))
-      // //floor.rotation.x = 90 * Math.PI / 180
-      // scene.add(floor)
-
-      var testCube = new THREE.Mesh(new THREE.BoxGeometry(300, 300, 300), new THREE.MeshLambertMaterial( {color: 'blue'} ))
-      testCube.translateZ(-1200)
-      scene.add(testCube)
-
-      //First front left cube
+     //First front left cube
       var cube = new THREE.Mesh(new THREE.BoxGeometry(100, 1000, 3000), new THREE.MeshLambertMaterial({
         color: 'blue' 
       }))
@@ -96,13 +87,14 @@ window.onload = function() {
       var cube2left = cube1front.clone()
       cube2left.translateX(4000)
 
-      // Add a check value and only start the game when all meshes have been loaded    
+      // Careful, async function, no synchronous alternative found yet
+      //Isn't to big of a problem though, since i never need to use the Geo in the rest of the init   
       var loader = new THREE.JSONLoader()
       function createScene(geometry, x, y, z, scale) {
           zmesh = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({color: 'green'}))
           zmesh.position.set(x, y, z)
           zmesh.scale.set(scale, scale, scale)
-          mesh_list.push(zmesh)
+          //mesh_list.push(zmesh)
           zmesh.translateZ(-200)
           zmesh.rotation.y = (Math.random() * 10)
           treeGeo = geometry;
@@ -155,7 +147,9 @@ window.onload = function() {
           var tempMesh = new THREE.Mesh(treeGeo, new THREE.MeshLambertMaterial( { color: 'hotpink' } ))
           tempMesh.position.set(x_pos, -300, z_pos)
           tempMesh.scale.set(40, 40, 40)
+          tempMesh.rotation.y = (Math.random() * 10)
           scene.add(tempMesh)
+          mesh_list.push(tempMesh)
         }
     } 
 
@@ -177,6 +171,7 @@ window.onload = function() {
       if(collisionResults.length > 0 && collisionResults[0].distance < 30)
       {
           console.log('pew pew pew')
+          alert('*boop*')
       }
       reloadWorld()
       renderer.render(scene, camera)
