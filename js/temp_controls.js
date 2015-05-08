@@ -1,6 +1,6 @@
 /**
  * @author mrdoob / http://mrdoob.com/
- * modified by philipp welsch 
+ * modified by philipp welsch / github.com/in0x
  */
 
 THREE.PointerLockControls = function ( camera ) {
@@ -12,7 +12,7 @@ THREE.PointerLockControls = function ( camera ) {
 	// pitchObject.add( camera );
 
 	var yawObject = new THREE.Object3D();
-	yawObject.position.y = 10;
+	yawObject.position.y = 250;
 	//yawObject.add( pitchObject );
 	yawObject.add( camera );
 
@@ -31,6 +31,9 @@ THREE.PointerLockControls = function ( camera ) {
 
 	var PI_2 = Math.PI / 2;
 
+	velocity.z = -900;
+	var speedCounter = 0;
+
 	var onMouseMove = function ( event ) {
 
 		if ( scope.enabled === false ) return;
@@ -46,6 +49,10 @@ THREE.PointerLockControls = function ( camera ) {
 
 		yawObject.rotation.x = Math.max( - PI_2, Math.min( PI_2, yawObject.rotation.x ) );
 
+		if (yawObject.rotation.y * 100 > 110)
+			yawObject.rotation.y = 1.1;
+		else if ((yawObject.rotation.y * 100 < -110))
+			yawObject.rotation.y = -1.1;
 	};
 
 	var onKeyDown = function ( event ) {
@@ -148,35 +155,34 @@ THREE.PointerLockControls = function ( camera ) {
 	}();
 
 	//modefied version, velocities originaly at 400
-	this.update = function () {
-
+	this.update = function (time) {
 		if ( scope.enabled === false ) return;
 
 		var time = performance.now();
 		var delta = ( time - prevTime ) / 1000;
 
 		velocity.x -= velocity.x * 10.0 * delta;
-		velocity.z -= velocity.z * 10.0 * delta;
+		//velocity.z -= velocity.z * 10.0 * delta;
 		velocity.y -= velocity.y * 10.0 * delta;
 
-		velocity.z -= 200
+		speedCounter++;
+		if (speedCounter % 50 == 0)
+			velocity.z -= 10;
+
 		//if ( moveForward ) velocity.z -= 7000.0 * delta;
 		//if ( moveBackward ) velocity.z += 7000.0 * delta;
 
 		// if ( moveLeft ) velocity.x -= 7000.0 * delta;
 		// if ( moveRight ) velocity.x += 7000.0 * delta;
 
-		if ( isOnObject === true ) {
-
-			velocity.y = Math.max( 0, velocity.y );
-
-		}
+		if (yawObject.position.y < 10) 
+			yawObject.position.y = 10;
+		else if (yawObject.position.y > 600)
+			yawObject.position.y = 600;
 
 		yawObject.translateX( velocity.x * delta );
 		yawObject.translateY( velocity.y * delta ); 
 		yawObject.translateZ( velocity.z * delta );
-
-		
 
 		prevTime = time;
 
