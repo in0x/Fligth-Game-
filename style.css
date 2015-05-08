@@ -1,8 +1,33 @@
+body {
+	font-family: Lato;
+}
+#splash {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	opacity: 0.6;
+	background-color: #eee;
+	color: #AAADAD;
+	text-align: center;
+	font-size: 270%;
+}
+
+a {
+	color: #AAADAD;
+	text-decoration: none;
+	opacity: 1;
+}
+
+#made {
+	position: absolute;
+	top: 92%;
+	right: 20px;
+}
+
 #speed{
 	position: absolute; 
 	top: 0px; 
 	left: 30px; 
-	font-family: Lato;
 	color: #eee;
 	font-style: bold;
 	font-size: 200%;
@@ -13,7 +38,6 @@
 	position: absolute; 
 	top: 0px; 
 	left: 44%; 
-	font-family: Lato;
 	color: #eee;
 	font-style: bold;
 	font-size: 200%;
@@ -24,7 +48,6 @@
 	position: absolute; 
 	top: 0px; 
 	right: 30px; 
-	font-family: Lato;
 	color: #eee;
 	font-style: bold;
 	font-size: 200%;

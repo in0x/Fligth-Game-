@@ -31,7 +31,7 @@ THREE.PointerLockControls = function ( camera ) {
 
 	var PI_2 = Math.PI / 2;
 
-	velocity.z = -900;
+	velocity.z = -1300;
 	var speedCounter = 0;
 
 	var onMouseMove = function ( event ) {

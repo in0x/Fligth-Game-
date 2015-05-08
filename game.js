@@ -34,6 +34,7 @@ window.onload = function() {
         if (e.keyCode == 13) {
           //element.webkitRequestFullscreen()
           element.requestPointerLock()
+          $('#splash').remove()
         }
           document.addEventListener( 'pointerlockchange', pointerlockchange, false )
           document.addEventListener( 'mozpointerlockchange', pointerlockchange, false )
@@ -181,7 +182,7 @@ window.onload = function() {
       var collisionResults = raycaster.intersectObjects(mesh_list, true)
       if(collisionResults.length > 0 && collisionResults[0].distance < 30) {
           console.log('pew pew pew')
-          alert('*boop*')
+          alert('*boop* Reload the page to play again')
       }
       $('#speed').html("Vel: " + controls.velocity.z)
       $('#distance').html("Distance: " + Math.floor(controls.getObject().position.z * -1 / 100))
