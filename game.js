@@ -10,7 +10,8 @@ window.onload = function() {
       camera, 
       controls,
       treeGeo,
-      renderer
+      renderer,
+      floor
 
 
    function init() {
@@ -45,8 +46,12 @@ window.onload = function() {
 
       scene = new THREE.Scene()
     
+      renderer = new THREE.WebGLRenderer({antialias: true})
+      renderer.setSize(RENDER_WIDTH, RENDER_HEIGHT)
+      renderer.setClearColor( 0x96e0e7, 1 )
+      document.body.appendChild(renderer.domElement)
     
-      camera = new THREE.PerspectiveCamera(45, RENDER_WIDTH / RENDER_HEIGHT, 0.1, 10000)
+      camera = new THREE.PerspectiveCamera(50, RENDER_WIDTH / RENDER_HEIGHT, 0.1, 10000)
       camera.lookAt(0, 0, 0)
       scene.add(camera)
      
@@ -57,73 +62,29 @@ window.onload = function() {
       scene.add(new THREE.AmbientLight(0x333333))
       // directional lighting
       var directionalLight = new THREE.DirectionalLight(0xffffff)
-      directionalLight.position.set(1, 1, 1).normalize()
+      //directionalLight.position.set(1, 1, 1).normalize()
+      directionalLight.position.set(200, 200, 200);
+      directionalLight.target.position.set(0, 0, 0);
+
       scene.add(directionalLight)
 
       scene.fog = new THREE.FogExp2( 0x96e0e7, 0.00025)
 
-     //First front left cube
-      // var cube = new THREE.Mesh(new THREE.BoxGeometry(100, 1000, 3000), new THREE.MeshLambertMaterial({
-      //   color: 'blue' 
-      // }))
-      // cube.side = THREE.DoubleSide
-      // cube.overdraw = true
-      // //cube.rotation.x = Math.PI * 0.1
-      // cube.translateX(-2000)
-    
-      // //back lef cube
-      // var cube1front = new THREE.Mesh(new THREE.BoxGeometry(100, 1000, 3000), new THREE.MeshLambertMaterial({
-      //   color: 'green' 
-      // }))
-      // cube1front.overdraw = true
-      // //cube1front.rotation.x = Math.PI * 0.1
-      // cube1front.translateX(-2000)
-      // cube1front.translateZ(-3000)
-   
-      // // front right cube
-      // var cube2 = cube.clone()
-      // cube2.translateX(4000)
-     
-      // // back right cube
-      // var cube2left = cube1front.clone()
-      // cube2left.translateX(4000)
-
       //Danger! May cause null reference in current state, since load completion isn't
       //guaranteed before the mesh is used.   
       var loader = new THREE.JSONLoader()
-      function createScene(geometry, x, y, z, scale) {
-          // zmesh = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({color: 'green'}))
-          // zmesh.position.set(x, y, z)
-          // zmesh.scale.set(scale, scale, scale)
-          //mesh_list.push(zmesh)
-          // zmesh.translateZ(-200)
-          // zmesh.rotation.y = (Math.random() * 10)
+      function createScene(geometry) {
           treeGeo = geometry
-          //scene.add(zmesh)
-          //spawnObstacles(treeGeo, 0)
           spawnObstacles(treeGeo, -3000)
           spawnObstacles(treeGeo, -6000)
-
       }
-      var callback = function(geometry) {createScene(geometry, 0, 0, -80, 100 )}
+      var callback = function(geometry) {createScene(geometry)}
       loader.load("tree.js", callback)
       
-
-      // scene.add(cube)
-      // scene.add(cube2)
-      // scene.add(cube1front)
-      // scene.add(cube2left) 
-      
-      //These are the objects to check raycasting intersection with
-      // mesh_list.push(cube)
-      // mesh_list.push(cube2)
-      // mesh_list.push(cube1front)
-      // mesh_list.push(cube2left)
-     
-      renderer = new THREE.WebGLRenderer({antialias: true})
-      renderer.setSize(RENDER_WIDTH, RENDER_HEIGHT)
-      renderer.setClearColor( 0x96e0e7, 1 )
-      document.body.appendChild(renderer.domElement)
+      floor = new THREE.Mesh(new THREE.PlaneBufferGeometry(10000, 10000), new THREE.MeshPhongMaterial( {color: 'hotpink', side: THREE.DoubleSide} ))
+      floor.rotation.x = 90 * Math.PI / 180
+      floor.position.y = 0
+      scene.add(floor)
 
       // I want to spawn in 2 levels of trees before i start the game, 
       //but the mesh isn't loaded at this point -> find a way to guarantee mesh load
@@ -148,8 +109,8 @@ window.onload = function() {
     //Second x -500, 500
     //Third x 500, 1500 
   function spawnObstacles(mesh, curViewPos) {
-    for (var y = 0; y < 3; y++)
-      for (var x = 0; x < 3; x++) {
+    for (var y = 0; y < 4; y++)
+      for (var x = 0; x < 4; x++) {
         // var x_pos = -1500 + 1000 * x,
         //     z_pos = curViewPos - 1000 * y
 
@@ -157,8 +118,8 @@ window.onload = function() {
             z_pos = getRandom(curViewPos, curViewPos - 1000 * y)
 
         var tempMesh = new THREE.Mesh(treeGeo, new THREE.MeshLambertMaterial( { color: 'hotpink' } ))
+        tempMesh.scale.set(60, 100, 60)
         tempMesh.position.set(x_pos, 0, z_pos)
-        tempMesh.scale.set(60, 60, 60)
         tempMesh.rotation.y = (Math.random() * 10)
         scene.add(tempMesh)
         mesh_list.push(tempMesh)
@@ -180,12 +141,14 @@ window.onload = function() {
       //THREE.Raycaster( origin, direction, near, far)
       var raycaster = new THREE.Raycaster( controls.getObject().position, cameraDirection.clone().normalize(), 0, 100)
       var collisionResults = raycaster.intersectObjects(mesh_list, true)
-      if(collisionResults.length > 0 && collisionResults[0].distance < 30) {
+      if(collisionResults.length > 0 && collisionResults[0].distance < 100) {
           console.log('pew pew pew')
-          alert('*boop* Reload the page to play again')
+          //alert('*boop* Reload the page to play again')
+          document.location.reload(true)
       }
       $('#speed').html("Vel: " + controls.velocity.z)
       $('#distance').html("Distance: " + Math.floor(controls.getObject().position.z * -1 / 100))
+      floor.position.z = controls.getObject().position.z - 2000
       reloadWorld()
       renderer.render(scene, camera)
     }
