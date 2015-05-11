@@ -51,7 +51,7 @@ window.onload = function() {
       renderer.setClearColor( 0x96e0e7, 1 )
       document.body.appendChild(renderer.domElement)
     
-      camera = new THREE.PerspectiveCamera(50, RENDER_WIDTH / RENDER_HEIGHT, 0.1, 10000)
+      camera = new THREE.PerspectiveCamera(50, RENDER_WIDTH / RENDER_HEIGHT, 0.1, 9000)
       camera.lookAt(0, 0, 0)
       scene.add(camera)
      
@@ -79,7 +79,7 @@ window.onload = function() {
           spawnObstacles(treeGeo, -6000)
       }
       var callback = function(geometry) {createScene(geometry)}
-      loader.load("tree.js", callback)
+      loader.load("better_tree.js", callback)
       
       floor = new THREE.Mesh(new THREE.PlaneBufferGeometry(10000, 10000), new THREE.MeshPhongMaterial( {color: 'hotpink', side: THREE.DoubleSide} ))
       floor.rotation.x = 90 * Math.PI / 180
@@ -89,6 +89,12 @@ window.onload = function() {
       // I want to spawn in 2 levels of trees before i start the game, 
       //but the mesh isn't loaded at this point -> find a way to guarantee mesh load
       // -> maybe a node module
+
+      stats = new Stats()
+      stats.domElement.style.position = 'absolute'
+      stats.domElement.style.bottom = '0px'
+      stats.domElement.style.right = '0px'
+      document.body.appendChild( stats.domElement )
   }
 
 
@@ -108,18 +114,27 @@ window.onload = function() {
     //First x -1500, -500; z position, 1000
     //Second x -500, 500
     //Third x 500, 1500 
+  // Remove all tree meshes behind camera from list so that they wont be checked,
+  // it doesn't matter if they are in the scene since they wont be rendered anyways
   function spawnObstacles(mesh, curViewPos) {
-    for (var y = 0; y < 4; y++)
-      for (var x = 0; x < 4; x++) {
+    for (var y = 0; y < 3; y++)
+      for (var x = 0; x < 3; x++) {
         // var x_pos = -1500 + 1000 * x,
         //     z_pos = curViewPos - 1000 * y
 
         var x_pos = getRandom(-1500 + 1000 * x, -1500 + 1000 * (x + 1)),
-            z_pos = getRandom(curViewPos, curViewPos - 1000 * y)
+            z_pos = getRandom(curViewPos, curViewPos - 1000 * y),
+            y_pos = getRandom(-900, 0)
+
+        // if (y == 1 && x == 1) {
+        //   var tempSphere = new THREE.Mesh(new THREE.SphereGeometry(50, 20, 20), new THREE.MeshPhongMaterial({color: 'hotpink', transparent: true, opacity: 0.6}))
+        //   tempSphere.position.set(x_pos + 300, 300, z_pos)
+        //   scene.add(tempSphere)
+        // }
 
         var tempMesh = new THREE.Mesh(treeGeo, new THREE.MeshLambertMaterial( { color: 'hotpink' } ))
         tempMesh.scale.set(60, 100, 60)
-        tempMesh.position.set(x_pos, 0, z_pos)
+        tempMesh.position.set(x_pos, y_pos, z_pos)
         tempMesh.rotation.y = (Math.random() * 10)
         scene.add(tempMesh)
         mesh_list.push(tempMesh)
@@ -129,7 +144,7 @@ window.onload = function() {
     function getRandom(min, max) {
       return Math.floor((Math.random() * (max - min) + min))
     }
- 
+
     //Actually no dependencies anymore, collision body is the Object3D of the camera
     //Raycaster uses intersectObjects method of objects, these only return a result if the distance between
     //intersection and origin indicates a collision (< 0)
@@ -150,6 +165,7 @@ window.onload = function() {
       $('#distance').html("Distance: " + Math.floor(controls.getObject().position.z * -1 / 100))
       floor.position.z = controls.getObject().position.z - 2000
       reloadWorld()
+      stats.update()
       renderer.render(scene, camera)
     }
 

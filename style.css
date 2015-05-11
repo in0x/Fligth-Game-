@@ -1,5 +1,5 @@
 body {
-	font-family: Lato;
+	font-family: Montserrat;
 }
 #splash {
 	position: absolute;
@@ -26,7 +26,7 @@ a {
 	color: #eee;
 }
 
-#speed{
+#speed {
 	position: absolute; 
 	top: 0px; 
 	left: 30px; 
@@ -36,7 +36,7 @@ a {
 	opacity: 0.7;
 }
 
-#title{
+#title {
 	position: absolute; 
 	top: 0px; 
 	left: 44%; 
@@ -46,7 +46,7 @@ a {
 	opacity: 0.7;
 }
 
-#distance{
+#distance {
 	position: absolute; 
 	top: 0px; 
 	right: 30px; 
@@ -54,4 +54,11 @@ a {
 	font-style: bold;
 	font-size: 200%;
 	opacity: 0.7;
+}
+
+#ret {
+	color: #AAADAD;
+	position: absolute;
+	top: 50%;
+	left: 50%;
 }
