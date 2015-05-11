@@ -183,8 +183,14 @@ THREE.PointerLockControls = function ( camera ) {
 
 		if (yawObject.position.y < 10) 
 			yawObject.position.y = 10;
-		else if (yawObject.position.y > 1000)
-		 	yawObject.position.y = 1000;
+		else if (yawObject.position.y > 1200)
+		 	yawObject.position.y = 1200;
+
+		if (yawObject.position.x < -1400)
+			yawObject.position.x = -1400
+
+		if (yawObject.position.x > 1400)
+			yawObject.position.x = 1400
 
 		yawObject.translateX( velocity.x * delta );
 		yawObject.translateY( velocity.y * delta ); 
