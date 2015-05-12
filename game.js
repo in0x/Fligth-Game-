@@ -1,17 +1,24 @@
 window.onload = function() {
       
   var RENDER_WIDTH = window.innerWidth, 
-      RENDER_HEIGHT = window.innerHeight,
-      clock = new THREE.Clock(),
-      mesh_list = [],
+      RENDER_HEIGHT = window.innerHeight, clock = new THREE.Clock(), mesh_list = [], 
       obstacles_list = [],
-      lastCheckPosition = -2000,
-      scene, 
-      camera, 
-      controls,
-      treeGeo,
-      renderer,
-      floor
+      lastCheckPosition = -2000, scene, camera, controls, treeGeo, renderer, floor,
+      skycolor = 0x96e0e7, //0x96D3E7
+      meshcolor = 'hotpink', //0xFF5A74
+      pickup_list = [], score = 0, start, pickup, timer = new THREE.Clock(), multiplicator = 0
+
+  var pickupMaterial = new THREE.MeshPhongMaterial({
+      color: 0x33FF33, 
+      specular: 0x00FF33, 
+      emissive: 0x009900, 
+      shininess: 60, 
+      shading: THREE.FlatShading, 
+      blending: THREE.NormalBlending, 
+      depthTest: true,
+      transparent: false,
+      opacity: 1.0    
+    });
 
 
    function init() {
@@ -36,6 +43,9 @@ window.onload = function() {
           //element.webkitRequestFullscreen()
           element.requestPointerLock()
           $('#splash').remove()
+          start = true
+         // element.webkitRequestFullscreen()
+         // renderer.setSize(screen.width, screen.height) 
         }
           document.addEventListener( 'pointerlockchange', pointerlockchange, false )
           document.addEventListener( 'mozpointerlockchange', pointerlockchange, false )
@@ -48,27 +58,26 @@ window.onload = function() {
     
       renderer = new THREE.WebGLRenderer({antialias: true})
       renderer.setSize(RENDER_WIDTH, RENDER_HEIGHT)
-      renderer.setClearColor( 0x96e0e7, 1 )
+      renderer.setClearColor( skycolor, 1 ) 
       document.body.appendChild(renderer.domElement)
     
-      camera = new THREE.PerspectiveCamera(50, RENDER_WIDTH / RENDER_HEIGHT, 0.1, 9000)
+      camera = new THREE.PerspectiveCamera(70, RENDER_WIDTH / RENDER_HEIGHT, 0.1, 8000)
       camera.lookAt(0, 0, 0)
       scene.add(camera)
      
       controls = new THREE.PointerLockControls(camera)
       scene.add(controls.getObject())
 
-      // Light
       scene.add(new THREE.AmbientLight(0x333333))
-      // directional lighting
       var directionalLight = new THREE.DirectionalLight(0xffffff)
-      //directionalLight.position.set(1, 1, 1).normalize()
       directionalLight.position.set(200, 200, 200);
       directionalLight.target.position.set(0, 0, 0);
 
       scene.add(directionalLight)
 
-      scene.fog = new THREE.FogExp2( 0x96e0e7, 0.00025)
+      scene.fog = new THREE.FogExp2( skycolor, 0.00025)
+
+      pickup = new THREE.Mesh(new THREE.IcosahedronGeometry(50, 0), pickupMaterial)
 
       //Danger! May cause null reference in current state, since load completion isn't
       //guaranteed before the mesh is used.   
@@ -81,14 +90,10 @@ window.onload = function() {
       var callback = function(geometry) {createScene(geometry)}
       loader.load("better_tree.js", callback)
       
-      floor = new THREE.Mesh(new THREE.PlaneBufferGeometry(10000, 10000), new THREE.MeshPhongMaterial( {color: 'hotpink', side: THREE.DoubleSide} ))
+      floor = new THREE.Mesh(new THREE.PlaneBufferGeometry(10000, 10000), new THREE.MeshPhongMaterial( {color: meshcolor, side: THREE.DoubleSide, fog: true} ))
       floor.rotation.x = 90 * Math.PI / 180
       floor.position.y = 0
       scene.add(floor)
-
-      // I want to spawn in 2 levels of trees before i start the game, 
-      //but the mesh isn't loaded at this point -> find a way to guarantee mesh load
-      // -> maybe a node module
 
       stats = new Stats()
       stats.domElement.style.position = 'absolute'
@@ -102,20 +107,11 @@ window.onload = function() {
     var currentViewingPosition = controls.getObject().position.z
     //Happens at -2000, -4000, -6000, etc.
     if (lastCheckPosition + (-1*currentViewingPosition) > 0) {
-      // mesh_list.forEach(function(mesh) {
-      //   mesh.translateZ(-2000)
-      // })
       lastCheckPosition -= 2000
-      //spawnObstacles(treeGeo, lastCheckPosition - 3000)
       spawnObstacles(treeGeo, lastCheckPosition - 5000)
     }
   }
-    
-    //First x -1500, -500; z position, 1000
-    //Second x -500, 500
-    //Third x 500, 1500 
-  // Remove all tree meshes behind camera from list so that they wont be checked,
-  // it doesn't matter if they are in the scene since they wont be rendered anyways
+  
   function spawnObstacles(mesh, curViewPos) {
     for (var y = 0; y < 3; y++)
       for (var x = 0; x < 3; x++) {
@@ -126,13 +122,17 @@ window.onload = function() {
             z_pos = getRandom(curViewPos, curViewPos - 1000 * y),
             y_pos = getRandom(-900, 0)
 
-        // if (y == 1 && x == 1) {
-        //   var tempSphere = new THREE.Mesh(new THREE.SphereGeometry(50, 20, 20), new THREE.MeshPhongMaterial({color: 'hotpink', transparent: true, opacity: 0.6}))
-        //   tempSphere.position.set(x_pos + 300, 300, z_pos)
-        //   scene.add(tempSphere)
-        // }
+        if (y == 1 && x == 1) {
+          var tempPickup = pickup.clone()
+          tempPickup.position.set(x_pos + 300, 300, z_pos)
+          tempPickup.rotation.y = 45 * Math.PI/180
+          tempPickup.rotation.x = 45 * Math.PI/180
+          scene.add(tempPickup)
+          pickup_list.push(tempPickup)
+          mesh_list.push(tempPickup)
+        }
 
-        var tempMesh = new THREE.Mesh(treeGeo, new THREE.MeshLambertMaterial( { color: 'hotpink' } ))
+        var tempMesh = new THREE.Mesh(treeGeo, new THREE.MeshLambertMaterial( { color: meshcolor } )) 
         tempMesh.scale.set(60, 100, 60)
         tempMesh.position.set(x_pos, y_pos, z_pos)
         tempMesh.rotation.y = (Math.random() * 10)
@@ -145,25 +145,55 @@ window.onload = function() {
       return Math.floor((Math.random() * (max - min) + min))
     }
 
-    //Actually no dependencies anymore, collision body is the Object3D of the camera
-    //Raycaster uses intersectObjects method of objects, these only return a result if the distance between
-    //intersection and origin indicates a collision (< 0)
+    function animatePickups() {
+      pickup_list.forEach(function(el) {
+        el.rotation.y += 2 * Math.PI / 180
+      })
+    }
+
+    function checkCollisions() {
+      var cameraDirection = controls.getDirection(new THREE.Vector3(0, 0, 0)).clone()
+      var raycaster = new THREE.Raycaster( controls.getObject().position, cameraDirection.clone().normalize(), 0, 100)
+      var collisionResults = raycaster.intersectObjects(mesh_list, true)
       
+      if(collisionResults.length > 0 && collisionResults[0].distance < 50) {
+        if (collisionResults[0].object.material === pickupMaterial) {
+          scene.remove(collisionResults[0].object)
+          multiplicator += 2
+          timer.start()
+        } else {
+          document.location.reload(true)
+        }
+      }
+    }
+
+    function drawUI() {
+      $('#score').html('Score: ' + multiplicator + 'x')
+
+      if (start)
+        score += Math.floor(controls.velocity.z * -1 / 100)
+   
+      $('#speed').html("Vel: " + controls.velocity.z)
+      $('#distance').html(score) 
+    }
+
     function animate() {
       requestAnimationFrame( animate )
       controls.update(clock.getElapsedTime())
-      var cameraDirection = controls.getDirection(new THREE.Vector3(0, 0, 0)).clone()
-      //THREE.Raycaster( origin, direction, near, far)
-      var raycaster = new THREE.Raycaster( controls.getObject().position, cameraDirection.clone().normalize(), 0, 100)
-      var collisionResults = raycaster.intersectObjects(mesh_list, true)
-      if(collisionResults.length > 0 && collisionResults[0].distance < 100) {
-          console.log('pew pew pew')
-          //alert('*boop* Reload the page to play again')
-          document.location.reload(true)
+      checkCollisions()
+      
+
+      if (multiplicator > 0) {
+        if (timer.getElapsedTime() >= 3) {
+          multiplicator = 0
+          timer.elapsedTime = 0
+        }
       }
-      $('#speed').html("Vel: " + controls.velocity.z)
-      $('#distance').html("Distance: " + Math.floor(controls.getObject().position.z * -1 / 100))
+      drawUI()
+            
       floor.position.z = controls.getObject().position.z - 2000
+
+      animatePickups()
       reloadWorld()
       stats.update()
       renderer.render(scene, camera)
