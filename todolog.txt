@@ -2,5 +2,4 @@
 - Implement actual score counting with multiplicator
 - Justify player not being able to move outside
 - Variable cleanup
-- Bug where meshes being detected twice causing multiplicator to go up by factor of four
 - Timer bar for multiplicator

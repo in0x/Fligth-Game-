@@ -1,12 +1,8 @@
 window.onload = function() {
       
-  var RENDER_WIDTH = window.innerWidth, 
-      RENDER_HEIGHT = window.innerHeight, clock = new THREE.Clock(), mesh_list = [], 
-      obstacles_list = [],
-      lastCheckPosition = -2000, scene, camera, controls, treeGeo, renderer, floor,
-      skycolor = 0x96e0e7, //0x96D3E7
-      meshcolor = 'hotpink', //0xFF5A74
-      pickup_list = [], score = 0, start, pickup, timer = new THREE.Clock(), multiplicator = 0
+  var RENDER_WIDTH, RENDER_HEIGHT, clock, mesh_list = [], obstacles_list = [],
+      lastCheckPosition, scene, camera, controls, treeGeo, renderer, floor, floorColor,
+      skycolor, meshcolor, pickup_list = [], score = 0, start, pickup, timer, multiplicator = 0
 
   var pickupMaterial = new THREE.MeshPhongMaterial({
       color: 0x33FF33, 
@@ -22,6 +18,16 @@ window.onload = function() {
 
 
    function init() {
+
+    RENDER_WIDTH = window.innerWidth
+    RENDER_HEIGHT = window.innerHeight
+    clock = new THREE.Clock()
+    lastCheckPosition = -2000
+    skycolor = 0x5AE8CD//0x96e0e7
+    meshcolor = 0xE27A3F //'hotpink'
+    floorColor = 0xEFC94C
+    timer = new THREE.Clock()
+
      clock.start()
       ///pointer locking////
       var userHasPointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document
@@ -44,7 +50,7 @@ window.onload = function() {
           element.requestPointerLock()
           $('#splash').remove()
           start = true
-         // element.webkitRequestFullscreen()
+          //element.webkitRequestFullscreen()
          // renderer.setSize(screen.width, screen.height) 
         }
           document.addEventListener( 'pointerlockchange', pointerlockchange, false )
@@ -90,7 +96,7 @@ window.onload = function() {
       var callback = function(geometry) {createScene(geometry)}
       loader.load("better_tree.js", callback)
       
-      floor = new THREE.Mesh(new THREE.PlaneBufferGeometry(10000, 10000), new THREE.MeshPhongMaterial( {color: meshcolor, side: THREE.DoubleSide, fog: true} ))
+      floor = new THREE.Mesh(new THREE.PlaneGeometry(10000, 10000, 4), new THREE.MeshLambertMaterial( {color: floorColor, side: THREE.DoubleSide, fog: true} ))
       floor.rotation.x = 90 * Math.PI / 180
       floor.position.y = 0
       scene.add(floor)
@@ -100,8 +106,12 @@ window.onload = function() {
       stats.domElement.style.bottom = '0px'
       stats.domElement.style.right = '0px'
       document.body.appendChild( stats.domElement )
+      console.log(floor.geometry.vertices)  
   }
 
+  function transformFloor() {
+    floor.geometry.vertices[0].z += 2000
+  }
 
   function reloadWorld() {
     var currentViewingPosition = controls.getObject().position.z
@@ -115,9 +125,7 @@ window.onload = function() {
   function spawnObstacles(mesh, curViewPos) {
     for (var y = 0; y < 3; y++)
       for (var x = 0; x < 3; x++) {
-        // var x_pos = -1500 + 1000 * x,
-        //     z_pos = curViewPos - 1000 * y
-
+       
         var x_pos = getRandom(-1500 + 1000 * x, -1500 + 1000 * (x + 1)),
             z_pos = getRandom(curViewPos, curViewPos - 1000 * y),
             y_pos = getRandom(-900, 0)
@@ -159,8 +167,13 @@ window.onload = function() {
       if(collisionResults.length > 0 && collisionResults[0].distance < 50) {
         if (collisionResults[0].object.material === pickupMaterial) {
           scene.remove(collisionResults[0].object)
+          // NEED TO REMOVE ELEMENT FROM MESHLIST!!!!! //
+          mesh_list.splice(mesh_list.indexOf(collisionResults[0].object), 1)
           multiplicator += 2
-          timer.start()
+          if (time.elapsedTime == 0) {
+            timer.start()
+          } else 
+            timer.elapsedTime = 0
         } else {
           document.location.reload(true)
         }
@@ -184,8 +197,9 @@ window.onload = function() {
       
 
       if (multiplicator > 0) {
-        if (timer.getElapsedTime() >= 3) {
+        if (timer.getElapsedTime() >= 4) {
           multiplicator = 0
+          timer.stop()
           timer.elapsedTime = 0
         }
       }
