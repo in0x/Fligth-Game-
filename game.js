@@ -81,7 +81,7 @@ window.onload = function() {
 
       scene.add(directionalLight)
 
-      scene.fog = new THREE.FogExp2( skycolor, 0.00025)
+      scene.fog = new THREE.FogExp2( skycolor, 0.00030)
 
       pickup = new THREE.Mesh(new THREE.IcosahedronGeometry(50, 0), pickupMaterial)
 
@@ -96,7 +96,7 @@ window.onload = function() {
       var callback = function(geometry) {createScene(geometry)}
       loader.load("better_tree.js", callback)
       
-      floor = new THREE.Mesh(new THREE.PlaneGeometry(10000, 10000, 4), new THREE.MeshLambertMaterial( {color: floorColor, side: THREE.DoubleSide, fog: true} ))
+      floor = new THREE.Mesh(new THREE.PlaneGeometry(7000, 10000, 4), new THREE.MeshLambertMaterial( {color: floorColor, side: THREE.DoubleSide, fog: true} ))
       floor.rotation.x = 90 * Math.PI / 180
       floor.position.y = 0
       scene.add(floor)
@@ -107,10 +107,17 @@ window.onload = function() {
       stats.domElement.style.right = '0px'
       document.body.appendChild( stats.domElement )
       console.log(floor.geometry.vertices)  
+
+      transformFloor()
   }
 
   function transformFloor() {
-    floor.geometry.vertices[0].z += 2000
+    floor.geometry.vertices.forEach(function(vertex) {
+      if (vertex.x == -3500 || vertex.x == 3500)
+        vertex.z -= 3000
+      else 
+        vertex.z = getRandom(-200, 200)
+    })
   }
 
   function reloadWorld() {
