@@ -2,7 +2,7 @@ window.onload = function() {
       
   var RENDER_WIDTH, RENDER_HEIGHT, clock, mesh_list = [], obstacles_list = [],
       lastCheckPosition, scene, camera, controls, treeGeo, renderer, floor, floorColor,
-      skycolor, meshcolor, pickup_list = [], score = 0, start, pickup, timer, multiplicator = 0
+      skycolor, meshcolor, pickup_list = [], score = 0, start, pickup, timer, multiplicator = 0, treeColors
 
   var pickupMaterial = new THREE.MeshPhongMaterial({
       color: 0x33FF33, 
@@ -10,23 +10,20 @@ window.onload = function() {
       emissive: 0x009900, 
       shininess: 60, 
       shading: THREE.FlatShading, 
-      blending: THREE.NormalBlending, 
-      depthTest: true,
-      transparent: false,
-      opacity: 1.0    
+      blending: THREE.NormalBlending  
     });
-
 
    function init() {
 
-    RENDER_WIDTH = window.innerWidth
-    RENDER_HEIGHT = window.innerHeight
+    RENDER_WIDTH = window.innerWidth 
+    RENDER_HEIGHT = window.innerHeight  
     clock = new THREE.Clock()
     lastCheckPosition = -2000
     skycolor = 0x5AE8CD//0x96e0e7
-    meshcolor = 0xE27A3F //'hotpink'
-    floorColor = 0xEFC94C
-    timer = new THREE.Clock()
+    meshcolor = 'hotpink' //0xE27A3F //'hotpink'
+    floorColor = 'hotpink' //0xEFC94C
+    timer = new THREE.Clock(),
+    treeColors = [0xE27A3F, 0xCB5333, 0xE2490B]
 
      clock.start()
       ///pointer locking////
@@ -61,13 +58,12 @@ window.onload = function() {
       ///pointer locking end////
 
       scene = new THREE.Scene()
-    
       renderer = new THREE.WebGLRenderer({antialias: true})
       renderer.setSize(RENDER_WIDTH, RENDER_HEIGHT)
       renderer.setClearColor( skycolor, 1 ) 
       document.body.appendChild(renderer.domElement)
     
-      camera = new THREE.PerspectiveCamera(70, RENDER_WIDTH / RENDER_HEIGHT, 0.1, 8000)
+      camera = new THREE.PerspectiveCamera(60, RENDER_WIDTH / RENDER_HEIGHT, 1, 8000)
       camera.lookAt(0, 0, 0)
       scene.add(camera)
      
@@ -96,8 +92,17 @@ window.onload = function() {
       var callback = function(geometry) {createScene(geometry)}
       loader.load("better_tree.js", callback)
       
-      floor = new THREE.Mesh(new THREE.PlaneGeometry(7000, 10000, 4), new THREE.MeshLambertMaterial( {color: floorColor, side: THREE.DoubleSide, fog: true} ))
+      floorGeo = new THREE.Geometry()
+      createVertices(6000, floorGeo, 250)
+      floorGeo.computeFaceNormals() // Need to compute face normals to apply directional lighting
+      floorGeo.computeVertexNormals()
+      floor = new THREE.Mesh(floorGeo,  new THREE.MeshPhongMaterial( {color: floorColor, fog: true, shading: THREE.FlatShading})) //, side: THREE.DoubleSide
+      transformFloor(floor)
+     //floor = new THREE.Mesh(new THREE.PlaneGeometry(7000, 10000, 4), new THREE.MeshLambertMaterial( {color: floorColor, fog: true} )) //side: THREE.DoubleSide,
       floor.rotation.x = 90 * Math.PI / 180
+      floor.rotation.y = 180 * Math.PI / 180
+      floor.position.x += 3000
+      floor.position.z -= 6000
       floor.position.y = 0
       scene.add(floor)
 
@@ -106,18 +111,45 @@ window.onload = function() {
       stats.domElement.style.bottom = '0px'
       stats.domElement.style.right = '0px'
       document.body.appendChild( stats.domElement )
-      console.log(floor.geometry.vertices)  
 
-      transformFloor()
+      var boop = new floorObject(6000, 250, 'hotpink')
+      boop.createVertices()
   }
 
-  function transformFloor() {
-    floor.geometry.vertices.forEach(function(vertex) {
-      if (vertex.x == -3500 || vertex.x == 3500)
-        vertex.z -= 3000
-      else 
-        vertex.z = getRandom(-200, 200)
+  function createVertices(sideLength, geometry, segmentLength) {
+    var limit = Math.floor(sideLength / segmentLength) 
+    for (var y = 0; y <= limit; y++) 
+      for (var x = 0; x <= limit; x++) {
+        geometry.vertices.push(new THREE.Vector3( x * segmentLength, y * segmentLength, 0 ))
+      }
+    createFaces(geometry, limit)
+  }
+
+  function createFaces(geometry, limit) {
+    for (y = 0; y < limit - 1; y++)
+      for (var x = 0; x < limit; x++) {
+        //Connects the floor faces. Basically the floor is made up of smalller squares which are alway comprised of two triangles
+        //whose vertices are (0, 1, 2) and (0, 2, 3) [the four square vertices], I automate this by acting like each part-square
+        //has an index (limit) which gets as an offset, and the x and y level of the current square
+        geometry.faces.push(new THREE.Face3( (limit + 1) * y + x, (limit + 1) * y + 1 + x, (limit + 1) * y + (limit + 2) + x))
+        geometry.faces.push(new THREE.Face3( (limit + 1) * y + x, (limit + 1) * (y + 1) + 1 + x, (limit + 1) * (y + 1) + x ))
+      }
+  }
+
+  function transformFloor(floorObject) {
+    floorObject.geometry.vertices.forEach(function(vertex) {
+      // if (vertex.x == 0 || vertex.x == 6000)
+      //   vertex.z += 4000
+      // else
+        vertex.z = getRandom(-100, 100)
     })
+  }
+
+  function resetFloor(curViewPos) {
+    var tempFloor = floor.clone()
+    tempFloor.position.z = (curViewPos - 7000)
+    tempFloor.rotation.z = 180 * Math.PI / 180
+    scene.add(tempFloor)
   }
 
   function reloadWorld() {
@@ -125,11 +157,17 @@ window.onload = function() {
     //Happens at -2000, -4000, -6000, etc.
     if (lastCheckPosition + (-1*currentViewingPosition) > 0) {
       lastCheckPosition -= 2000
+      resetFloor(lastCheckPosition)
       spawnObstacles(treeGeo, lastCheckPosition - 5000)
     }
   }
-  
+
   function spawnObstacles(mesh, curViewPos) {
+    mesh_list.forEach(function(el) {
+      if (el.position.z > controls.getObject().position.z)
+        mesh_list.splice(mesh_list.indexOf(el), 1)
+    })    
+    //Pickups and trees
     for (var y = 0; y < 3; y++)
       for (var x = 0; x < 3; x++) {
        
@@ -147,7 +185,7 @@ window.onload = function() {
           mesh_list.push(tempPickup)
         }
 
-        var tempMesh = new THREE.Mesh(treeGeo, new THREE.MeshLambertMaterial( { color: meshcolor } )) 
+        var tempMesh = new THREE.Mesh(treeGeo, new THREE.MeshLambertMaterial( { color: meshcolor} )) 
         tempMesh.scale.set(60, 100, 60)
         tempMesh.position.set(x_pos, y_pos, z_pos)
         tempMesh.rotation.y = (Math.random() * 10)
@@ -177,7 +215,7 @@ window.onload = function() {
           // NEED TO REMOVE ELEMENT FROM MESHLIST!!!!! //
           mesh_list.splice(mesh_list.indexOf(collisionResults[0].object), 1)
           multiplicator += 2
-          if (time.elapsedTime == 0) {
+          if (timer.elapsedTime == 0) {
             timer.start()
           } else 
             timer.elapsedTime = 0
@@ -197,11 +235,9 @@ window.onload = function() {
       $('#distance').html(score) 
     }
 
-    function animate() {
-      requestAnimationFrame( animate )
+    function render() {
       controls.update(clock.getElapsedTime())
       checkCollisions()
-      
 
       if (multiplicator > 0) {
         if (timer.getElapsedTime() >= 4) {
@@ -210,16 +246,57 @@ window.onload = function() {
           timer.elapsedTime = 0
         }
       }
-      drawUI()
-            
-      floor.position.z = controls.getObject().position.z - 2000
 
+      drawUI()
+      //floor.position.z = controls.getObject().position.z - 2000
       animatePickups()
       reloadWorld()
       stats.update()
+    }
+
+    function animate() {
+      requestAnimationFrame( animate )
+      render()
       renderer.render(scene, camera)
     }
 
     init()
     animate()
   }
+
+var floorObject = function(side, segments, meshColor) {
+  var sideLength = side,
+      color = meshColor,
+      segmentLength = segmentLength,
+      geometry = new THREE.Geometry()
+
+  //this.createObject = function()
+  this.createVertices =  function() {
+    var limit = Math.floor(sideLength / segmentLength) 
+    for (var y = 0; y <= limit; y++) 
+      for (var x = 0; x <= limit; x++) {
+        this.geometry.vertices.push(new THREE.Vector3( x * segmentLength, y * segmentLength, 0 ))
+      }
+  }
+
+  this.createFaces = function(geometry, limit) {
+    for (y = 0; y < limit - 1; y++)
+      for (var x = 0; x < limit; x++) {
+        //Connects the floor faces. Basically the floor is made up of smalller squares which are alway comprised of two triangles
+        //whose vertices are (0, 1, 2) and (0, 2, 3) [the four square vertices], I automate this by acting like each part-square
+        //has an index (limit) which gets as an offset, and the x and y level of the current square
+        geometry.faces.push(new THREE.Face3( (limit + 1) * y + x, (limit + 1) * y + 1 + x, (limit + 1) * y + (limit + 2) + x))
+        geometry.faces.push(new THREE.Face3( (limit + 1) * y + x, (limit + 1) * (y + 1) + 1 + x, (limit + 1) * (y + 1) + x ))
+      }
+  }
+
+  this.transform = function(floorObject) {
+    floorObject.geometry.vertices.forEach(function(vertex) {
+      // if (vertex.x == -2500 || vertex.x == 2500)
+      //   vertex.z += 3000
+      // else
+
+        vertex.z = getRandom(-100, 100)
+    })
+  }
+}
