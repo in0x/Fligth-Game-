@@ -1,5 +1,0 @@
-- Implement a nice way to stop the gameloop and display the score
-- Implement actual score counting with multiplicator
-- Justify player not being able to move outside
-- Variable cleanup
-- Timer bar for multiplicator
