@@ -2,13 +2,13 @@ window.onload = function() {
       
   var RENDER_WIDTH, RENDER_HEIGHT, clock, mesh_list = [], obstacles_list = [],
       lastCheckPosition, scene, camera, controls, treeGeo, renderer, floor, floorColor,
-      skycolor, meshcolor, pickup_list = [], score = 0, start, pickup, timer, multiplicator = 0, treeColors
+      skycolor, meshcolor, pickup_list = [], score = 0, start, pickup, timer, multiplicator = 1, treeColors
 
   var pickupMaterial = new THREE.MeshPhongMaterial({
       color: 0x33FF33, 
       specular: 0x00FF33, 
       emissive: 0x009900, 
-      shininess: 60, 
+      shininess: 70, 
       shading: THREE.FlatShading, 
       blending: THREE.NormalBlending  
     });
@@ -79,7 +79,7 @@ window.onload = function() {
 
       scene.fog = new THREE.FogExp2( skycolor, 0.00030)
 
-      pickup = new THREE.Mesh(new THREE.IcosahedronGeometry(50, 0), pickupMaterial)
+      pickup = new THREE.Mesh(new THREE.IcosahedronGeometry(70, 0), pickupMaterial)
 
       //Danger! May cause null reference in current state, since load completion isn't
       //guaranteed before the mesh is used.   
@@ -175,7 +175,7 @@ window.onload = function() {
             z_pos = getRandom(curViewPos, curViewPos - 1000 * y),
             y_pos = getRandom(-900, 0)
 
-        if (y == 1 && x == 1) {
+        if (y == 1 && x == 1 && getRandom(0, 11) > 6) {
           var tempPickup = pickup.clone()
           tempPickup.position.set(x_pos + 300, 300, z_pos)
           tempPickup.rotation.y = 45 * Math.PI/180
@@ -214,7 +214,7 @@ window.onload = function() {
           scene.remove(collisionResults[0].object)
           // NEED TO REMOVE ELEMENT FROM MESHLIST!!!!! //
           mesh_list.splice(mesh_list.indexOf(collisionResults[0].object), 1)
-          multiplicator += 2
+          multiplicator *= 2
           if (timer.elapsedTime == 0) {
             timer.start()
           } else 
@@ -229,10 +229,10 @@ window.onload = function() {
       $('#score').html('Score: ' + multiplicator + 'x')
 
       if (start)
-        score += Math.floor(controls.velocity.z * -1 / 100)
+        score += Math.floor(controls.velocity.z * -1 / 1000) * multiplicator
    
       $('#speed').html("Vel: " + controls.velocity.z)
-      $('#distance').html(score) 
+      $('#distance').html(Math.round(score / 100)) 
     }
 
     function render() {
@@ -241,7 +241,7 @@ window.onload = function() {
 
       if (multiplicator > 0) {
         if (timer.getElapsedTime() >= 4) {
-          multiplicator = 0
+          multiplicator = 1
           timer.stop()
           timer.elapsedTime = 0
         }
