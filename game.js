@@ -174,7 +174,7 @@ window.onload = function () {
       }
     }
     if (controls.hasBoost) {
-      if (boostTimer.getElapsedTime() >= 1.5) {
+      if (boostTimer.getElapsedTime() >= 2.5) {
         controls.hasBoost = false
         boostTimer.stop()
         boostTimer.elapsedTime = 0
@@ -237,7 +237,8 @@ window.onload = function () {
 
         if (y == 1 && x == 1 && getRandom(0, 11) > 6) {
           var tempPickup = pickup.clone()
-          tempPickup.material = pickupBlueMaterial
+          if (getRandom(0, 2) == 0)  
+            tempPickup.material = pickupRedMaterial
           tempPickup.position.set(x_pos + 300, 300, z_pos)
           tempPickup.rotation.y = 45 * Math.PI / 180
           tempPickup.rotation.x = 45 * Math.PI / 180
