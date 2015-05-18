@@ -12,6 +12,7 @@ THREE.PointerLockControls = function ( camera ) {
 	yawObject.position.y = 250;
 	yawObject.add( camera );
 
+	var isSlowed = false;
 	var hasBoost = false;
 	var moveForward = false;
 	var moveBackward = false;

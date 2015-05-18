@@ -2,7 +2,7 @@ window.onload = function () {
   var RENDER_WIDTH, RENDER_HEIGHT, clock, mesh_list = [], obstacles_list = [],
     lastCheckPosition, scene, camera, controls, treeGeo, renderer, floorColor, floor,
     skycolor, meshcolor, pickup_list = [], score = 0, start, pickup, pointTimer, multiplicator = 1, treeColors,
-    boostTimer, speedStamp = 0
+    boostTimer, speedStamp = 0, slowTimer, slowStamp
     //NEED: slowmo timer, slowmo handling, controls.hasSlowMo variable - good night
   var pickupMaterial = new THREE.MeshPhongMaterial({
     color: 0x33FF33,
@@ -40,7 +40,8 @@ window.onload = function () {
     meshcolor = 'hotpink' // 0xE27A3F //'hotpink'
     floorColor = 'hotpink' // 0xEFC94C
     pointTimer = new THREE.Clock(),
-    boostTimer = new THREE.Clock()
+    boostTimer = new THREE.Clock(),
+    slowTimer = new THREE.Clock(),
     treeColors = [0xE27A3F, 0xCB5333, 0xE2490B]
 
     clock.start()
@@ -126,7 +127,7 @@ window.onload = function () {
     stats.domElement.style.right = '0px'
     document.body.appendChild(stats.domElement)
   }
-  // // INIT END ////
+  //// INIT END ////
 
   function createVertices (sideLength, geometry, segmentLength) {
     var limit = Math.floor(sideLength / segmentLength)
@@ -179,23 +180,29 @@ window.onload = function () {
         boostTimer.stop()
         boostTimer.elapsedTime = 0
         controls.velocity.z = speedStamp * 1.1
+        speedStamp = 0
+      }
+    }
+    if (controls.isSlowed) {
+      if (slowTimer.getElapsedTime() >= 2) {
+        controls.isSlowed = false
+        slowTimer.stop()
+        slowTimer.elapsedTime = 0
+        controls.velocity.z = slowStamp
       }
     }
   }
 
   function triggerPickUp (modifier) {
+    scene.remove(modifier)
+    mesh_list.splice(mesh_list.indexOf(modifier), 1)
     if (modifier.material === pickupMaterial) {
-      scene.remove(modifier)
-      mesh_list.splice(mesh_list.indexOf(modifier), 1)
       multiplicator *= 2
-
       if (pointTimer.elapsedTime == 0) {
         pointTimer.start()
       } else
         pointTimer.elapsedTime = 0
     } else if (modifier.material === pickupRedMaterial) {
-      scene.remove(modifier)
-      mesh_list.splice(mesh_list.indexOf(modifier), 1)
       if (boostTimer.elapsedTime == 0) {
         controls.hasBoost = true
         speedStamp = controls.velocity.z
@@ -203,6 +210,19 @@ window.onload = function () {
         boostTimer.start()
       } else
         boostTimer.elapsedTime = 0
+    } else if (modifier.material === pickupBlueMaterial) {
+      if (slowTimer.elapsedTime == 0) {
+        controls.isSlowed = true
+        
+        if (speedStamp != 0)
+          slowStamp = speedStamp
+        else 
+          slowStamp = controls.velocity.z
+        
+        controls.velocity.z = -700
+        slowTimer.start()
+      } else 
+        slowTimer.elapsedTime = 0
     }
   }
 
@@ -237,8 +257,11 @@ window.onload = function () {
 
         if (y == 1 && x == 1 && getRandom(0, 11) > 6) {
           var tempPickup = pickup.clone()
-          if (getRandom(0, 2) == 0)  
+          var prob = getRandom(0, 3)
+          if (prob == 0)  
             tempPickup.material = pickupRedMaterial
+          else if (prob == 1)
+            tempPickup.material = pickupBlueMaterial
           tempPickup.position.set(x_pos + 300, 300, z_pos)
           tempPickup.rotation.y = 45 * Math.PI / 180
           tempPickup.rotation.x = 45 * Math.PI / 180
