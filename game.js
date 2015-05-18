@@ -198,9 +198,9 @@ window.onload = function () {
     mesh_list.splice(mesh_list.indexOf(modifier), 1)
     if (modifier.material === pickupMaterial) {
       multiplicator *= 2
-      if (pointTimer.elapsedTime == 0) {
+      if (pointTimer.elapsedTime == 0) 
         pointTimer.start()
-      } else
+      else
         pointTimer.elapsedTime = 0
     } else if (modifier.material === pickupRedMaterial) {
       if (boostTimer.elapsedTime == 0) {
@@ -248,6 +248,7 @@ window.onload = function () {
       if (el.position.z > controls.getObject().position.z)
         mesh_list.splice(mesh_list.indexOf(el), 1)
     })
+    //Overwrite array indices instead of splicing
     // Pickups and trees
     for (var y = 0; y < 3; y++)
       for (var x = 0; x < 3; x++) {
