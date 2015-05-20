@@ -90,7 +90,7 @@ window.onload = function () {
     directionalLight.position.set(200, 200, 200)
     directionalLight.target.position.set(0, 0, 0)
 
-    scene.add(directionalLight)
+    scene.add(directionalLight)  //deactivate for spooky mode
 
     scene.fog = new THREE.FogExp2(skycolor, 0.00030)
 
@@ -193,6 +193,8 @@ window.onload = function () {
     }
   }
 
+  // When you have a speedboost and then get a slowmo, the boost timer still
+  // runs and sets the speed back to normal after running out
   function triggerPickUp (modifier) {
     scene.remove(modifier)
     mesh_list.splice(mesh_list.indexOf(modifier), 1)
