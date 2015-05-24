@@ -1,9 +1,10 @@
 window.onload = function () {
+
   var RENDER_WIDTH, RENDER_HEIGHT, clock, mesh_list = [], obstacles_list = [],
     lastCheckPosition, scene, camera, controls, treeGeo, renderer, floorColor, floor,
     skycolor, meshcolor, pickup_list = [], score = 0, start, pickup, pointTimer, multiplicator = 1, treeColors,
     boostTimer, speedStamp = 0, slowTimer, slowStamp
-    //NEED: slowmo timer, slowmo handling, controls.hasSlowMo variable - good night
+    
   var pickupMaterial = new THREE.MeshPhongMaterial({
     color: 0x33FF33,
     specular: 0x2AFF5A, // 0x00FF33, 
