@@ -4,9 +4,10 @@ var mongodb = require('mongodb');
 var monk = require('monk');
 var credentials = require('../credentials');
 var db = monk(credentials.uri);
+var cors = require('cors');
  
 // GET scores, sorted by time
-router.get('/', function(req, res) {
+router.get('/', cors(), function(req, res) {
   console.log('GET scores');
   // Get the database object we attached to the request
   //var db = req.db;
