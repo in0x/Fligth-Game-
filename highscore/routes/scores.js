@@ -13,7 +13,7 @@ router.get('/', cors(), function(req, res) {
   //var db = req.db;
   // Get the collection
   var collection = db.get('scores');
-  // Find all entries, sort by time (ascending)
+  // Find all entries, sort by score (ascending)
   collection.find({}, { sort: { time: 1 } }, function (err, docs) {
     if (err) {
         // Handle error
