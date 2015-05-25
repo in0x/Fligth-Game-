@@ -2,8 +2,8 @@ window.onload = function () {
   var RENDER_WIDTH, RENDER_HEIGHT, clock, mesh_list = [], obstacles_list = [],
     lastCheckPosition, scene, camera, controls, treeGeo, renderer, floorColor, floor,
     skycolor, meshcolor, pickup_list = [], score = 0, start, pickup, pointTimer, multiplicator = 1, treeColors,
-    boostTimer, speedStamp = 0, slowTimer, slowStamp
-    
+    boostTimer, speedStamp = 0, slowTimer, slowStamp, stop = false, scores 
+
   var pickupMaterial = new THREE.MeshPhongMaterial({
     color: 0x33FF33,
     specular: 0x2AFF5A, // 0x00FF33, 
@@ -60,7 +60,7 @@ window.onload = function () {
         if (e.keyCode == 13) {
           // element.webkitRequestFullscreen()
           element.requestPointerLock()
-          $('#splash').remove()
+          $('#splash').detach()
           start = true
         // element.webkitRequestFullscreen()
         // renderer.setSize(screen.width, screen.height) 
@@ -90,7 +90,7 @@ window.onload = function () {
     directionalLight.position.set(200, 200, 200)
     directionalLight.target.position.set(0, 0, 0)
 
-    scene.add(directionalLight)  //deactivate for spooky mode
+    scene.add(directionalLight)  // deactivate for spooky mode
 
     scene.fog = new THREE.FogExp2(skycolor, 0.00030)
 
@@ -106,7 +106,7 @@ window.onload = function () {
     }
 
     var callback = function (geometry) {createScene(geometry)}
-    loader.load('better_tree.js', callback)
+    loader.load('js/better_tree.js', callback)
 
     floorGeo = new THREE.Geometry()
     createVertices(6000, floorGeo, 250)
@@ -127,7 +127,48 @@ window.onload = function () {
     stats.domElement.style.right = '0px'
     document.body.appendChild(stats.domElement)
   }
-  //// INIT END ////
+
+  // // INIT END ////
+
+  function getTopScores(el, num, callback) {
+    console.log('Getting', num, 'top scores')
+    if (!num) num = 3
+
+    $.ajax({
+      type: 'GET',
+      dataType: 'text',
+      url: 'https://flightapi-flightscore.rhcloud.com/top/' + num,
+      success: function (data) {
+        //console.log('Scores downloaded', data)
+        el = JSON.parse(data)
+        console.log(JSON.parse(data))
+        if (callback) callback(el)
+      },
+      error: function (xhr, msg) {
+        console.error('AJAX error', xhr.status, msg)
+      }
+    })
+  }
+
+  function postScore(name, score, callback) {
+    console.log('Posting score', name, score)
+ 
+    $.ajax({
+        type: 'POST',
+        url: 'https://flightapi-flightscore.rhcloud.com/post',
+        data: {
+            name: name,
+            score: score,
+        },
+        success: function(data) {
+            console.log('Score posted', data)
+            if (callback) callback()
+        },
+        error: function(xhr, msg) {
+            console.error('AJAX error', xhr.status, msg)
+        }
+    })
+  }
 
   function createVertices (sideLength, geometry, segmentLength) {
     var limit = Math.floor(sideLength / segmentLength)
@@ -200,7 +241,7 @@ window.onload = function () {
     mesh_list.splice(mesh_list.indexOf(modifier), 1)
     if (modifier.material === pickupMaterial) {
       multiplicator *= 2
-      if (pointTimer.elapsedTime == 0) 
+      if (pointTimer.elapsedTime == 0)
         pointTimer.start()
       else
         pointTimer.elapsedTime = 0
@@ -215,15 +256,15 @@ window.onload = function () {
     } else if (modifier.material === pickupBlueMaterial) {
       if (slowTimer.elapsedTime == 0) {
         controls.isSlowed = true
-        
+
         if (speedStamp != 0)
           slowStamp = speedStamp
-        else 
+        else
           slowStamp = controls.velocity.z
-        
+
         controls.velocity.z = -700
         slowTimer.start()
-      } else 
+      } else
         slowTimer.elapsedTime = 0
     }
   }
@@ -250,7 +291,7 @@ window.onload = function () {
       if (el.position.z > controls.getObject().position.z)
         mesh_list.splice(mesh_list.indexOf(el), 1)
     })
-    //Overwrite array indices instead of splicing
+    // Overwrite array indices instead of splicing
     // Pickups and trees
     for (var y = 0; y < 3; y++)
       for (var x = 0; x < 3; x++) {
@@ -261,7 +302,7 @@ window.onload = function () {
         if (y == 1 && x == 1 && getRandom(0, 11) > 6) {
           var tempPickup = pickup.clone()
           var prob = getRandom(0, 3)
-          if (prob == 0)  
+          if (prob == 0)
             tempPickup.material = pickupRedMaterial
           else if (prob == 1)
             tempPickup.material = pickupBlueMaterial
@@ -296,7 +337,7 @@ window.onload = function () {
       if (hitObject.material === pickupMaterial || hitObject.material === pickupRedMaterial || hitObject.material === pickupBlueMaterial)
         triggerPickUp(hitObject)
       else
-        document.location.reload(true)
+        endGame()
     }
   }
 
@@ -306,10 +347,49 @@ window.onload = function () {
     $('#distance').html(Math.round(score / 100))
   }
 
+  function endGame() {
+    stop = true
+    $('#ajax').load('end.html')
+    getTopScores(scores, 5, drawScoreBoard)
+  }
+
+  function drawScoreBoard(data) {
+    console.log(data)
+    
+    function compare(a,b) {
+      if (a.score > b.score)
+        return -1;
+      if (a.score < b.score)
+        return 1;
+      return 0;
+    }
+    
+    data.sort(compare)
+    console.log(data)
+    $('#spin').remove()
+    $('#result').text("Your score: " + Math.round(score / 100))
+    for (var i = 0; i < 5; i++) {
+      $('#scores').append('<li style="font-size:20px;text-align:"center";>Name: ' + data[i].name + ' ||| Score: ' + data[i].score + '</li>')
+    }
+
+    $('#sendScore').on('click', function() {
+      var playerName = $('#postScore').val()
+      if (playerName.trim() === '')
+        console.log('not valid')
+      else {
+        postScore($('#postScore').val(), score)
+        $('#sendScore').remove()
+        $('#postScore').remove()
+        $('#end').prepend('<p style="margin-top:80px;">Thanks!</p>')
+        $('#thanks').remove()
+      }
+    })
+  }
+
   function render () {
     controls.update(clock.getElapsedTime())
     if (start)
-      score += Math.floor(controls.velocity.z * -2 / 1000) * multiplicator 
+      score += Math.floor(controls.velocity.z * -2 / 1000) * multiplicator
     checkCollisions()
     handlePickups()
     drawUI()
@@ -319,8 +399,8 @@ window.onload = function () {
     if (controls.hasBoost)
       console.log('vrooom')
   }
-
   function animate () {
+    if (stop) return
     requestAnimationFrame(animate)
     render()
     renderer.render(scene, camera)
