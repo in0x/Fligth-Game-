@@ -127,6 +127,22 @@ window.onload = function () {
     stats.domElement.style.bottom = '0px'
     stats.domElement.style.right = '0px'
     document.body.appendChild(stats.domElement)
+
+    console.log("WHAT THE FUCK")
+    console.log('Getting scores')
+ 
+    $.ajax({
+        type: 'GET',
+        dataType: 'jsonp',
+        url: 'https://highscore.ngrok.com/scores/',
+        success: function(data) {
+            console.log('Scores downloaded', data);
+            if (callback) callback();
+        },
+        error: function(xhr, msg) {
+            console.error('AJAX error', xhr.status, msg);
+        }
+    });
   }
   //// INIT END ////
 
@@ -326,6 +342,7 @@ window.onload = function () {
     render()
     renderer.render(scene, camera)
   }
+
   init()
   animate()
 }
