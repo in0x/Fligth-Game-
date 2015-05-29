@@ -384,6 +384,10 @@ window.onload = function () {
         $('#thanks').remove()
       }
     })
+
+    $('#restart').on('click', function() {
+      location.reload()
+    })
   }
 
   function render () {
