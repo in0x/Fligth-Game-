@@ -62,6 +62,7 @@ window.onload = function () {
           element.requestPointerLock()
           $('#splash').detach()
           start = true
+          console.log(controls.getObject().position.z)
         // element.webkitRequestFullscreen()
         // renderer.setSize(screen.width, screen.height) 
         }
@@ -103,7 +104,7 @@ window.onload = function () {
       treeGeo = geometry
       spawnObstacles(treeGeo, -3000)
       spawnObstacles(treeGeo, -6000)
-    }
+    } 
 
     var callback = function (geometry) {createScene(geometry)}
     loader.load('js/better_tree.js', callback)
@@ -343,7 +344,7 @@ window.onload = function () {
 
   function drawUI () {
     $('#score').html('Score: ' + multiplicator + 'x')
-    $('#speed').html('Vel: ' + Math.floor(controls.velocity.z))
+    $('#speed').html('Vel: ' + Math.floor(-controls.velocity.z))
     $('#distance').html(Math.round(score / 100))
   }
 
