@@ -1,7 +1,7 @@
-/**
- * @author mrdoob / http://mrdoob.com/
- * modified by philipp welsch / github.com/in0x
- */
+// @author mrdoob / http://mrdoob.com/
+// modified by Philipp Welsch - pwelsch.mmt-b2014@fh-salzburg.ac.at @inoxstuff
+// for MMP1(Multimediaprojekt 1)
+// at FH Salzburg (UAS Salzburg) MMT (Multimediatechnology)
 
 THREE.PointerLockControls = function ( camera ) {
 

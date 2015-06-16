@@ -1,3 +1,7 @@
+// Created by Philipp Welsch
+// for MMP1(Multimediaprojekt 1)
+// at FH Salzburg (UAS Salzburg) MMT (Multimediatechnology)
+
 window.onload = function () {
   var RENDER_WIDTH, RENDER_HEIGHT, clock, mesh_list = [], obstacles_list = [],
     lastCheckPosition, scene, camera, controls, treeGeo, renderer, floorColor, floor,
