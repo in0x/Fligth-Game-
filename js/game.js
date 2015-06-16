@@ -2,7 +2,7 @@ window.onload = function () {
   var RENDER_WIDTH, RENDER_HEIGHT, clock, mesh_list = [], obstacles_list = [],
     lastCheckPosition, scene, camera, controls, treeGeo, renderer, floorColor, floor,
     skycolor, meshcolor, pickup_list = [], score = 0, start, pickup, pointTimer, multiplicator = 1, treeColors,
-    boostTimer, speedStamp = 0, slowTimer, slowStamp, stop = false, scores 
+    boostTimer, speedStamp = 0, slowTimer, slowStamp, stop = false, scores, sound 
 
   var pickupMaterial = new THREE.MeshPhongMaterial({
     color: 0x33FF33,
@@ -43,6 +43,7 @@ window.onload = function () {
     boostTimer = new THREE.Clock(),
     slowTimer = new THREE.Clock(),
     treeColors = [0xE27A3F, 0xCB5333, 0xE2490B]
+    sound = new Audio("Collect_Point_01.mp3")
 
     clock.start()
     // /pointer locking////
@@ -129,7 +130,7 @@ window.onload = function () {
     document.body.appendChild(stats.domElement)
   }
 
-  // // INIT END ////
+  //// INIT END ////
 
   function getTopScores(el, num, callback) {
     console.log('Getting', num, 'top scores')
@@ -239,6 +240,7 @@ window.onload = function () {
   // runs and sets the speed back to normal after running out
   function triggerPickUp (modifier) {
     scene.remove(modifier)
+    sound.play()
     mesh_list.splice(mesh_list.indexOf(modifier), 1)
     if (modifier.material === pickupMaterial) {
       multiplicator *= 2
