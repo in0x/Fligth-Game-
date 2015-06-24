@@ -79,7 +79,7 @@ window.onload = function () {
     // /pointer locking end////
 
     scene = new THREE.Scene()
-    renderer = new THREE.WebGLRenderer({antialias: true})
+    renderer = new THREEHREE.WebGLRenderer({antialias: true})
     renderer.setSize(RENDER_WIDTH, RENDER_HEIGHT)
     renderer.setClearColor(skycolor, 1)
     document.body.appendChild(renderer.domElement)
